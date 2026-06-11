@@ -171,6 +171,7 @@
     if (m.fiscal_year_end) sub.push("FY end: " + m.fiscal_year_end);
     var badge = m.status_tese ? '<span class="ch-status">' + (STATUS_LABELS[m.status_tese] || m.status_tese) + "</span>" : "";
     el("company-header").innerHTML =
+      '<button class="pdf-fab" onclick="window.print()" title="Baixar esta pagina em PDF"><img src="assets/pdf-icon.svg" alt="PDF"></button>' +
       '<h2 class="ch-name">' + name + '<span class="ch-ticker">' + state.ticker + "</span> " + badge + "</h2>" +
       '<div class="ch-sub">' + sub.map(function (s) { return "<span>" + s + "</span>"; }).join("") + "</div>";
     var mb = [];
@@ -272,9 +273,33 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  /* ---------- UPDATES feed (Home) ---------- */
+  var updShown = 5;
+  var UPD_MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function updDate(iso) { var p = String(iso).split("-"); return p.length === 3 ? UPD_MO[+p[1] - 1] + " " + (+p[2]) + ", " + p[0] : iso; }
+  window.renderUpdates = function () {
+    var c = el("home-updates"); if (!c) return;
+    var ups = HOME.updates || [];
+    if (!ups.length) { c.innerHTML = ""; return; }
+    var tagcls = { COVERAGE: "upd-cov", EARNINGS: "upd-ern" };
+    var rows = ups.slice(0, updShown).map(function (u) {
+      return '<div class="upd-row"><span class="upd-tag ' + (tagcls[u.tag] || "") + '">' + u.tag + "</span>" +
+        '<span class="upd-date">' + updDate(u.date) + "</span><span class=\"upd-txt\">" + u.html + "</span></div>";
+    }).join("");
+    var more = "";
+    if (ups.length > 5) {
+      more = updShown < ups.length
+        ? '<button class="upd-more" onclick="updToggle()">Mostrar mais ' + (ups.length - updShown) + " ▾</button>"
+        : '<button class="upd-more" onclick="updToggle()">Mostrar menos ▴</button>';
+    }
+    c.innerHTML = '<div class="upd-card"><div class="upd-head">UPDATES</div>' + rows + more + "</div>";
+  };
+  window.updToggle = function () { updShown = (updShown < (HOME.updates || []).length) ? (HOME.updates || []).length : 5; window.renderUpdates(); };
+
   /* ---------- init ---------- */
   document.addEventListener("DOMContentLoaded", function () {
     el("home-asof").textContent = HOME.as_of ? "market data as of " + HOME.as_of : "";
+    window.renderUpdates();
     populateCompanySelect();
     var first = companyList()[0];
     if (first) { state.ticker = first; el("company-sel").value = first; }

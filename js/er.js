@@ -42,10 +42,15 @@
     var d = ER[ticker];
     if (!d) return null;
     var h = d.header || {};
+    // preco/mkt cap LIVE do Home (EOD diario); EV recalculado = mkt cap live + net debt do build
+    var _lv = window.liveMkt && window.liveMkt(ticker);
+    var epx = _lv ? _lv.price : h.price;
+    var emc = _lv ? _lv.mktcap : h.mktcap;
+    var eev = (_lv && h.ev != null && h.mktcap) ? (_lv.mktcap + (h.ev - h.mktcap)) : h.ev;
     var banner = '<div class="ic-banner"><h2>' + d.name + " (" + ticker + ") — " + d.quarter_label + " Earnings Review</h2>" +
       '<div class="ic-thesis">' + d.reported + "</div></div>" +
-      '<div class="ic-statbox">Price <b>' + (h.price != null ? "$" + h.price.toFixed(2) : "—") + "</b> &nbsp;|&nbsp; Mkt Cap <b>" + fBig(h.mktcap) +
-      "</b> &nbsp;|&nbsp; EV <b>" + fBig(h.ev) + "</b> &nbsp;|&nbsp; Fwd P/E <b>" + (h.fwd_pe != null ? h.fwd_pe.toFixed(1) + "x" : "—") + "</b></div>";
+      '<div class="ic-statbox">Price <b>' + (epx != null ? "$" + epx.toFixed(2) : "—") + "</b> &nbsp;|&nbsp; Mkt Cap <b>" + fBig(emc) +
+      "</b> &nbsp;|&nbsp; EV <b>" + fBig(eev) + "</b> &nbsp;|&nbsp; Fwd P/E <b>" + (h.fwd_pe != null ? h.fwd_pe.toFixed(1) + "x" : "—") + "</b></div>";
 
     // KPI cards
     var kpis = '<div class="er-kpi-row">' + d.kpis.map(function (k) {
@@ -111,6 +116,12 @@
 
     var src = '<div class="ic-src" style="margin-top:18px">FONTE OFICIAL — ' + d.source + "</div>";
 
-    return "<div class='er-tab'>" + banner + kpis + sec1 + sec2 + sec3 + sec4 + sec5 + sec6 + src + "</div>";
+    // cabecalho FOX (so na impressao) + botao Salvar PDF
+    var printHeader = '<div class="ind-print-header"><img src="assets/fox-logo.svg" alt="FOX" class="ind-print-logo">' +
+      '<div class="ind-print-meta"><b>' + d.name + " (" + ticker + ") — " + d.quarter_label + " Earnings Review</b>" +
+      "<span>Fox Investimentos · " + d.reported + "</span></div></div>";
+    var pdfBar = '<div class="er-pdf-bar"><button class="ind-pdf-btn" onclick="window.print()" title="Salvar/imprimir este Earnings Review em PDF">⎙ Salvar PDF</button></div>';
+
+    return "<div class='er-tab'>" + printHeader + pdfBar + banner + kpis + sec1 + sec2 + sec3 + sec4 + sec5 + sec6 + src + "</div>";
   };
 })();

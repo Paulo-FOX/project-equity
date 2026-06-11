@@ -1,15 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232 56" width="232" height="56" role="img" aria-label="FOX Investimentos">
-  <!-- marca: raposa geometrica -->
-  <g>
-    <polygon points="8,18 3,1 25,17" fill="#1b3454"/>           <!-- orelha esq -->
-    <polygon points="48,18 53,1 31,17" fill="#1b3454"/>          <!-- orelha dir -->
-    <polygon points="8,16 48,16 28,52" fill="#E07B2E"/>          <!-- rosto -->
-    <polygon points="20,31 36,31 28,47" fill="#ffffff"/>         <!-- focinho -->
-    <circle cx="21" cy="27" r="2.2" fill="#1b3454"/>             <!-- olho esq -->
-    <circle cx="35" cy="27" r="2.2" fill="#1b3454"/>             <!-- olho dir -->
-    <circle cx="28" cy="45" r="1.8" fill="#1b3454"/>             <!-- nariz -->
-  </g>
-  <!-- wordmark -->
-  <text x="66" y="30" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-weight="700" fill="#1b3454" letter-spacing="1">FOX</text>
-  <text x="67" y="46" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="600" letter-spacing="3.5" fill="#7a8aa0">INVESTIMENTOS</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 42" width="196" height="42" role="img" aria-label="FOX Investimentos">
+  <!-- versao NAVY p/ fundo claro (impressao/PDF): badge gradiente (identidade do Painel) + wordmark navy -->
+  <defs>
+    <linearGradient id="fl" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1F4D"/>
+      <stop offset="100%" stop-color="#2855A8"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="2" width="38" height="38" rx="8" fill="url(#fl)"/>
+  <text x="20" y="21.5" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF" letter-spacing="1">FOX</text>
+  <text x="49" y="22" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#0B1F4D" letter-spacing="2.4">INVESTIMENTOS</text>
 </svg>

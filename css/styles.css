@@ -62,7 +62,26 @@ body{
 
 /* ---------- main ---------- */
 .main-content{flex:1; min-width:0; padding:28px 34px; max-width:1080px; margin:0 auto}
-.company-header{margin-bottom:18px}
+.company-header{margin-bottom:18px; position:relative}
+.pdf-fab{position:absolute; top:-2px; right:0; background:#fff; border:1px solid var(--border); border-radius:8px;
+  padding:6px 8px; cursor:pointer; box-shadow:0 1px 4px rgba(11,31,77,.12); transition:box-shadow .15s, transform .15s; line-height:0}
+.pdf-fab:hover{box-shadow:0 3px 10px rgba(11,31,77,.22); transform:translateY(-1px)}
+.pdf-fab img{height:24px; width:24px; display:block}
+
+/* ===== Feed de UPDATES (Home) ===== */
+.home-updates{margin:6px 0 16px}
+.upd-card{background:#fff; border:1px solid var(--border); border-left:4px solid var(--navy); border-radius:8px; padding:13px 18px}
+.upd-head{font-size:11px; font-weight:700; letter-spacing:1.6px; color:var(--muted); margin-bottom:8px}
+.upd-row{display:flex; align-items:baseline; gap:11px; padding:7px 0; border-top:1px solid #eef2f8; font-size:13px; line-height:1.45}
+.upd-row:nth-of-type(2){border-top:none}
+.upd-tag{flex:none; align-self:center; font-size:9px; font-weight:700; letter-spacing:.5px; padding:3px 7px; border-radius:4px; color:#fff}
+.upd-cov{background:#2855A8}
+.upd-ern{background:#16a34a}
+.upd-date{flex:none; color:var(--muted); font-size:11px; white-space:nowrap; min-width:82px}
+.upd-txt{color:var(--text)}
+.upd-txt b{color:var(--navy); font-weight:700}
+.upd-more{margin-top:6px; background:none; border:none; color:#2855A8; font-size:12.5px; font-weight:600; cursor:pointer; padding:4px 0}
+.upd-more:hover{text-decoration:underline}
 .company-header .ch-name{font-size:24px; font-weight:700; color:var(--navy); margin:0}
 .company-header .ch-ticker{font-size:15px; color:var(--muted); font-weight:600; margin-left:6px}
 .company-header .ch-sub{font-size:12px; color:var(--muted); margin-top:4px; display:flex; gap:14px; flex-wrap:wrap}
@@ -608,12 +627,13 @@ svg [data-eqtip]{cursor:pointer}
 
 /* ===== Logo FOX (top-bar, pill branco p/ contraste no navy) ===== */
 .top-bar-right{display:flex; justify-content:flex-end; align-items:center}
-.top-bar-right .fox-logo{height:26px; background:#fff; padding:5px 11px; border-radius:7px; box-shadow:0 1px 3px rgba(0,0,0,.22)}
+.top-bar-right .fox-logo{height:30px; display:block}   /* versao clara, direto na barra navy (sem pill) */
 
 /* ===== Header das industrias: titulo + botao Salvar PDF ===== */
 .ind-head{display:flex; align-items:flex-start; justify-content:space-between; gap:18px}
 .ind-pdf-btn{flex:none; background:var(--navy); color:#fff; border:none; border-radius:6px; padding:9px 15px; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .15s}
 .ind-pdf-btn:hover{background:#27456e}
+.er-pdf-bar{display:flex; justify-content:flex-end; margin-bottom:10px}
 .ind-print-header{display:none}   /* so aparece na impressao */
 
 /* ===== IMPRESSAO / PDF ===== */
@@ -621,23 +641,28 @@ svg [data-eqtip]{cursor:pointer}
   @page{margin:13mm 12mm}
   *{-webkit-print-color-adjust:exact !important; print-color-adjust:exact !important}
   body{background:#fff !important}
-  /* esconde tudo que nao e o relatorio */
-  .top-bar, #home-app-body, #company-app-body,
-  #industries-app-body .sidebar, .ind-pdf-btn, .ind-toggle,
+  /* esconde a interface (barra, sidebars, navs, botoes, header de tela, tooltip).
+     NAO mexe nos .app-body: o que estiver ativo (visivel) imprime; os inativos seguem display:none */
+  .top-bar, #home-app-body, .sidebar, .nav-btn,
+  .ind-pdf-btn, .ind-toggle, .er-pdf-bar, .pdf-fab,
+  #company-meta, #company-source,
   #eqtip, .eqtip, .eq-tooltip{display:none !important}
-  #industries-app-body{display:block !important}
-  #industries-app-body .main-content{display:block !important; overflow:visible !important; width:100% !important}
+  /* company-header (nome da empresa) aparece no topo do PDF */
+  #company-header{display:block !important; border-bottom:2px solid var(--navy); padding-bottom:8px; margin-bottom:14px}
+  /* conteudo em largura cheia */
+  .main-content{display:block !important; overflow:visible !important; width:100% !important; padding:0 !important}
   .ind-wrap{max-width:100% !important; margin:0 !important; padding:0 !important}
-  /* cabecalho FOX no topo de cada pagina impressa */
+  /* cabecalho FOX no topo da impressao (industries + earnings review) */
   .ind-print-header{display:flex !important; align-items:center; gap:13px; border-bottom:2.5px solid var(--navy); padding-bottom:9px; margin-bottom:16px}
-  .ind-print-logo{height:36px}
+  .ind-print-logo{height:38px}
   .ind-print-meta{display:flex; flex-direction:column; line-height:1.35}
   .ind-print-meta b{font-size:14.5px; color:var(--navy)}
   .ind-print-meta span{font-size:9.5px; color:#666}
-  /* NAO quebrar elementos no meio (evita info comecando numa pagina e terminando noutra) */
-  .chart-box, .ind-card, .ind-cards, table, .cm-tbl, .peer-tbl, .se-tbl,
-  .ind-print-header, .hyp-note, .ind-bullets li{page-break-inside:avoid; break-inside:avoid}
+  /* NAO quebrar elementos no meio (industries + ER) — evita info comecando numa pagina e terminando noutra */
+  .chart-box, .ind-card, .ind-cards, table, .cm-tbl, .peer-tbl, .se-tbl, .hyp-note, .ind-bullets li,
+  .ind-print-header, .kpi-card, .er-kpi-row, .ic-card, .ic-statbox, .er-callout,
+  .er-trade, .er-th-card, .er-qa, .er-cagr-wrap{page-break-inside:avoid; break-inside:avoid}
   /* manter o titulo da secao junto do conteudo seguinte */
-  .ind-sec-label, h2, h3{page-break-after:avoid; break-after:avoid}
+  .ind-sec-label, .ic-sec-bar, .ic-banner h2, h2, h3{page-break-after:avoid; break-after:avoid}
   .ind-sec-label{margin-top:12px}
 }
