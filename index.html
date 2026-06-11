@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="./css/styles.css">
 <!-- Dados (gerados por market-data/build_home.py e site/build/build.py) -->
 <script src="./data/home.js"></script>
+<script src="./data/calendar.js"></script>
+<script src="./data/reports.js"></script>
 <script src="./data/abnb.js"></script>
 <script src="./data/amzn.js"></script>
 <script src="./data/avgo.js"></script>
@@ -80,6 +82,7 @@
     <button class="top-bar-btn active" id="tb-home" onclick="switchTopBar('home')">Home</button>
     <button class="top-bar-btn" id="tb-company" onclick="switchTopBar('company')">Company</button>
     <button class="top-bar-btn" id="tb-industries" onclick="switchTopBar('industries')">Industries</button>
+    <button class="top-bar-btn" id="tb-calendar" onclick="switchTopBar('calendar')">Calendar</button>
   </div>
   <h1>Project Equity <span class="brand-tag">FOX</span></h1>
   <div class="top-bar-right"><img src="assets/fox-logo-light.svg" alt="FOX Investimentos" class="fox-logo"></div>
@@ -91,13 +94,13 @@
     <div class="home-head">
       <div>
         <h2 class="home-title">Coverage Hub</h2>
-        <p class="home-sub">Market data &amp; forward fundamentals. Clique no cabeçalho p/ ordenar; clique na linha p/ abrir a empresa.</p>
+        <p class="home-sub">Market data &amp; forward fundamentals. Click a column to sort; click a row to open the company.</p>
       </div>
-      <div class="home-asof" id="home-asof"></div>
+      <div class="home-head-right"><div id="home-reports" class="home-reports"></div><div class="home-asof" id="home-asof"></div></div>
     </div>
     <div id="home-updates" class="home-updates"></div>
     <div class="home-toolbar">
-      <input type="text" id="home-filter" placeholder="Filtrar por empresa, ticker ou setor…" oninput="renderHomeTable()">
+      <input type="text" id="home-filter" placeholder="Filter by company, ticker, or sector…" oninput="renderHomeTable()">
       <span class="home-count" id="home-count"></span>
     </div>
     <div class="table-wrap home-table-wrap">
@@ -127,7 +130,7 @@
       <button class="nav-btn" data-view="insider" onclick="switchView('insider')">Insider Trading</button>
     </div>
     <div class="sidebar-section sidebar-foot">
-      <div class="sidebar-label">Fonte</div>
+      <div class="sidebar-label">Source</div>
       <div id="company-source" class="company-source"></div>
     </div>
   </div>
@@ -170,6 +173,11 @@
 <script src="./js/er.js"></script>
 <script src="./js/insider.js"></script>
 <script src="./js/industries.js"></script>
+<script src="./js/reports.js"></script>
 <script src="./js/app.js"></script>
+<div class="app-body" id="calendar-app-body" style="display:none">
+  <div class="main-content"><div id="calendar-container"></div></div>
+</div>
+<div id="report-overlay" class="report-overlay" style="display:none"></div>
 </body>
 </html>

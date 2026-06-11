@@ -121,7 +121,7 @@
     }).join("");
 
     el("home-table").innerHTML = "<thead>" + gh + hh + "</thead><tbody>" + benchHtml + body + "</tbody>";
-    el("home-count").textContent = rows.length + " de " + HOME.rows.length + " empresas";
+    el("home-count").textContent = rows.length + " of " + HOME.rows.length + " companies";
   };
 
   window.openCompany = function (ticker) {
@@ -171,7 +171,7 @@
     if (m.fiscal_year_end) sub.push("FY end: " + m.fiscal_year_end);
     var badge = m.status_tese ? '<span class="ch-status">' + (STATUS_LABELS[m.status_tese] || m.status_tese) + "</span>" : "";
     el("company-header").innerHTML =
-      '<button class="pdf-fab" onclick="window.print()" title="Baixar esta pagina em PDF"><img src="assets/pdf-icon.svg" alt="PDF"></button>' +
+      '<button class="pdf-fab" onclick="window.print()" title="Download this page as PDF"><img src="assets/pdf-icon.svg" alt="PDF"></button>' +
       '<h2 class="ch-name">' + name + '<span class="ch-ticker">' + state.ticker + "</span> " + badge + "</h2>" +
       '<div class="ch-sub">' + sub.map(function (s) { return "<span>" + s + "</span>"; }).join("") + "</div>";
     var mb = [];
@@ -258,10 +258,46 @@
     el("home-app-body").style.display = which === "home" ? "" : "none";
     el("company-app-body").style.display = which === "company" ? "" : "none";
     var ind = el("industries-app-body"); if (ind) ind.style.display = which === "industries" ? "" : "none";
+    var cab = el("calendar-app-body"); if (cab) cab.style.display = which === "calendar" ? "" : "none";
     el("tb-home").classList.toggle("active", which === "home");
     el("tb-company").classList.toggle("active", which === "company");
     var tbi = el("tb-industries"); if (tbi) tbi.classList.toggle("active", which === "industries");
+    var tbc = el("tb-calendar"); if (tbc) tbc.classList.toggle("active", which === "calendar");
     if (which === "industries" && !window._indInit) { window._indInit = 1; selectIndustry("advertising"); }
+    if (which === "calendar" && window.renderCalendar) window.renderCalendar();
+  };
+
+  /* ---------- Calendar tab (todas as datas de earnings, Bloomberg oficial) ---------- */
+  var CAL_MO = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var CAL_DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  window.renderCalendar = function () {
+    var c = el("calendar-container"); if (!c) return;
+    var cal = window.EQ_CAL || {}, evs = cal.events || [];
+    if (!evs.length) { c.innerHTML = '<div class="cal-wrap"><p class="cal-empty">No calendar data yet.</p></div>'; return; }
+    var today = cal.as_of || "", tw = cal.this_week || {}, nw = cal.next_week || {};
+    function badge(d) {
+      if (tw.start && d >= tw.start && d <= tw.end) return ' <span class="cal-badge tw">This week</span>';
+      if (nw.start && d >= nw.start && d <= nw.end) return ' <span class="cal-badge nw">Next week</span>';
+      return "";
+    }
+    function fmt(d) { var x = new Date(d + "T00:00:00"); return CAL_DOW[x.getDay()] + ", " + CAL_MO[x.getMonth()].slice(0, 3) + " " + x.getDate(); }
+    var groups = {}, order = [];
+    evs.forEach(function (e) { var m = e.date.slice(0, 7); if (!groups[m]) { groups[m] = []; order.push(m); } groups[m].push(e); });
+    var html = '<div class="cal-head"><h2>Earnings Calendar</h2><p>Next earnings date per covered company · <b>Bloomberg EXPECTED_REPORT_DT</b> (official source) · updates daily · as of ' + today +
+      '<br><span class="cal-legend"><span class="cal-st cal-st-c">Confirmed</span> = company-announced (≤3 wks) · <span class="cal-st cal-st-e">Expected</span> = Bloomberg estimate from historical pattern</span></p></div>';
+    html += order.map(function (m) {
+      var rows = groups[m].map(function (e) {
+        var deep = DATA[e.ticker] || (window.EQ_OV && window.EQ_OV[e.ticker]);
+        var link = deep ? '<a class="cal-link" href="#" onclick="openCompany(\'' + e.ticker + '\');return false">Earnings Review →</a>' : "";
+        var last = e.last && e.last !== "None" ? '<span class="cal-last">last: ' + e.last + "</span>" : "";
+        var st = e.status ? '<span class="cal-st cal-st-' + (e.status === "Confirmed" ? "c" : "e") + '">' + e.status + "</span>" : "";
+        return '<div class="cal-row' + (e.date < today ? " cal-past" : "") + '"><span class="cal-date">' + fmt(e.date) + "</span>" +
+          '<span class="cal-co"><b>' + e.name + '</b> <span class="cal-tk">' + e.ticker + "</span> " + st + badge(e.date) + "</span>" +
+          '<span class="cal-meta">' + last + link + "</span></div>";
+      }).join("");
+      return '<div class="cal-month"><div class="cal-month-h">' + CAL_MO[+m.slice(5, 7) - 1] + " " + m.slice(0, 4) + "</div>" + rows + "</div>";
+    }).join("");
+    c.innerHTML = '<div class="cal-wrap">' + html + "</div>";
   };
   window.selectIndustry = function (key) {
     window._indKey = key;
@@ -296,10 +332,29 @@
   };
   window.updToggle = function () { updShown = (updShown < (HOME.updates || []).length) ? (HOME.updates || []).length : 5; window.renderUpdates(); };
 
+  /* ---------- Key Events (proximos earnings) ---------- */
+  var CAL = window.EQ_CAL || {};
+  window.renderKeyEvents = function () {
+    var c = el("home-keyevents"); if (!c || !CAL.this_week) { if (c) c.innerHTML = ""; return; }
+    function line(e) {
+      var deep = !!DATA[e.ticker] || (window.EQ_OV && window.EQ_OV[e.ticker]);
+      var link = deep ? ' · <a class="ke-link" href="#" onclick="openCompany(\'' + e.ticker + '\');return false">Earnings Review →</a>' : "";
+      return '<div class="ke-row"><span class="ke-date">' + updDate(e.date) + '</span><span class="ke-co"><b>' + e.name + " (" + e.ticker + ")</b> earnings" + link + "</span></div>";
+    }
+    function sec(title, wk) {
+      var evs = wk.events || [];
+      var body = evs.length ? evs.map(line).join("") : '<div class="ke-empty">No covered company reporting.</div>';
+      return '<div class="ke-sec"><div class="ke-sec-h">' + title + ' <span>(' + updDate(wk.start) + " – " + updDate(wk.end) + ")</span></div>" + body + "</div>";
+    }
+    c.innerHTML = '<div class="ke-card"><div class="upd-head">KEY EVENTS — UPCOMING EARNINGS</div>' +
+      sec("This week", CAL.this_week) + sec("Next week", CAL.next_week) + "</div>";
+  };
+
   /* ---------- init ---------- */
   document.addEventListener("DOMContentLoaded", function () {
     el("home-asof").textContent = HOME.as_of ? "market data as of " + HOME.as_of : "";
     window.renderUpdates();
+    if (window.renderReportButtons) window.renderReportButtons();
     populateCompanySelect();
     var first = companyList()[0];
     if (first) { state.ticker = first; el("company-sel").value = first; }
