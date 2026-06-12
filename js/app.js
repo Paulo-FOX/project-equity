@@ -113,7 +113,7 @@
     }).join("");
 
     var body = rows.map(function (r) {
-      var hasDeep = !!DATA[r.ticker];
+      var hasDeep = !!DATA[r.ticker] || !!(window.EQ_OV && window.EQ_OV[r.ticker]);
       return "<tr class='hrow" + (hasDeep ? "" : " no-deep") + "' onclick=\"openCompany('" + r.ticker + "')\">" +
         COLS.map(function (c) {
           return "<td style='text-align:" + c.align + "'>" + c.cell(r) + "</td>";
@@ -126,7 +126,7 @@
 
   window.openCompany = function (ticker) {
     switchTopBar("company");
-    if (DATA[ticker]) { el("company-sel").value = ticker; selectCompany(ticker); }
+    if (DATA[ticker] || (window.EQ_OV && window.EQ_OV[ticker])) { el("company-sel").value = ticker; selectCompany(ticker); }
     else { state.ticker = ticker; renderHeader(); el("view-container").innerHTML =
       '<div class="empty-view"><p>Deep-dive de <strong>' + ticker + '</strong> ainda não gerado.</p>' +
       '<p class="hint">Rode <code>site/build/build.py ' + ticker + '</code> (precisa de <code>wiki/' + ticker + '.md</code>).</p></div>'; }
@@ -313,14 +313,27 @@
   var updShown = 5;
   var UPD_MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   function updDate(iso) { var p = String(iso).split("-"); return p.length === 3 ? UPD_MO[+p[1] - 1] + " " + (+p[2]) + ", " + p[0] : iso; }
+  // abre a empresa direto no Earnings Review
+  window.openCompanyER = function (t) { openCompany(t); if (window.switchView) window.switchView("er"); };
+  // torna os nomes de empresas cobertas (em <b>...</b>) clicaveis -> ER
+  function linkifyCos(html) {
+    return String(html).replace(/<b>([^<]+)<\/b>/g, function (m, inner) {
+      var mt = inner.match(/\(([A-Z]{1,6})\)/);
+      var tk = mt ? mt[1] : (/^[A-Z]{1,6}$/.test(inner.trim()) ? inner.trim() : null);
+      if (tk && (DATA[tk] || (window.EQ_OV && window.EQ_OV[tk])))
+        return '<a class="upd-co" href="#" onclick="openCompanyER(\'' + tk + '\');return false">' + m + "</a>";
+      return m;
+    });
+  }
   window.renderUpdates = function () {
     var c = el("home-updates"); if (!c) return;
     var ups = HOME.updates || [];
     if (!ups.length) { c.innerHTML = ""; return; }
     var tagcls = { COVERAGE: "upd-cov", EARNINGS: "upd-ern" };
     var rows = ups.slice(0, updShown).map(function (u) {
-      return '<div class="upd-row"><span class="upd-tag ' + (tagcls[u.tag] || "") + '">' + u.tag + "</span>" +
-        '<span class="upd-date">' + updDate(u.date) + "</span><span class=\"upd-txt\">" + u.html + "</span></div>";
+      var st = u.status ? '<span class="upd-st upd-st-' + (u.status === "FINALIZED" ? "f" : "p") + '">' + u.status + "</span>" : "";
+      return '<div class="upd-row"><span class="upd-tag ' + (tagcls[u.tag] || "") + '">' + u.tag + "</span>" + st +
+        '<span class="upd-date">' + updDate(u.date) + "</span><span class=\"upd-txt\">" + linkifyCos(u.html) + "</span></div>";
     }).join("");
     var more = "";
     if (ups.length > 5) {
